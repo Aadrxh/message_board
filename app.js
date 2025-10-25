@@ -4,6 +4,8 @@ const path=require('node:path');
 const port = process.env.PORT || 3000;
 
 app.set('view engine', 'ejs');
+app.use(express.urlencoded({ extended: true }));//middleware to parse form data
+
 
 app.set('views', path.join(__dirname, 'views'));
 
