@@ -1,44 +1,36 @@
-const express = require('express');
+const express = require("express");
+const { getAllMessages, addMessage } = require("../db/queries");
+
 const indexRouter = express.Router();
 
-const messages = [
-  {
-    text: "Hi there!",
-    user: "Amando",
-    added: new Date()
-  },
-  {
-    text: "Hello World!",
-    user: "Charles",
-    added: new Date()
-  },
-  {
-    text: "Good to see you!",
-    user: "Dhinkachika",
-    added: new Date()
-  },
-  {
-    text: "Welcome!",
-    user:"system",
-    added: new Date()
+indexRouter.get("/", async (req, res) => {
+  try {
+    const messages = await getAllMessages();
+    res.render("index", { title: "Message Board", messages });
+  } catch (err) {
+    console.error("Error fetching messages:", err);
+    res.status(500).send("Internal Server Error");
   }
-];
-
-
-indexRouter.get('/', (req, res) => {
-  res.render('index',{title:"Index Page", messages:messages});
 });
 
-indexRouter.get('/new', (req, res) => {
-    res.render('form',{title:"New Message"});
+// GET
+indexRouter.get("/new", (req, res) => {
+  res.render("form", { title: "New Message"});
 });
 
-indexRouter.post('/new', (req, res) => {
-    const messageText = req.body.text;
-    const messageUser = req.body.user || "Anonymous";
-    messages.push({ text: messageText, user: messageUser, added: new Date() });
-    res.redirect('/');// Redirect to the index page after adding a new message
+// POST
+indexRouter.post("/new", async (req, res) => {
+  const messageUser = req.body.user?.trim() || "Anonymous";
+  const messageText = req.body.text?.trim();
 
+  try {
+    await addMessage(messageUser, messageText);
+    res.redirect("/");
+  } 
+  catch (err) {
+    console.error("Error adding message:", err);
+    res.status(500).send("Database Error");
+  }
 });
 
-module.exports = indexRouter;  // Make sure you actually export the router
+module.exports = indexRouter;
